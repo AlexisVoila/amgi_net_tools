@@ -76,7 +76,10 @@ private:
 
     void configure_tls(tls_options settings)
     {
-        ssl_ctx_.set_options(net::ssl::context::default_workarounds | net::ssl::context::no_tlsv1_1 | net::ssl::context::no_tlsv1_2);
+        ssl_ctx_.set_options(
+            net::ssl::context::default_workarounds | 
+            net::ssl::context::no_tlsv1_1 | 
+            net::ssl::context::no_tlsv1_2);
 
         ssl_ctx_.load_verify_file(settings.ca_cert);
         ssl_ctx_.use_private_key_file(settings.private_key, net::ssl::context::pem);

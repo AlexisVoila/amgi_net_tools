@@ -40,13 +40,18 @@ class session
     buffer_type local_buffer_{};
     buffer_type remote_buffer_{};
 
-    session(net::io_context& ios, net::ssl::context& ctx, session_manager& mgr, std::string_view remote_host, std::string_view remote_service)
-        : resolver_(ios)
-        , local_sock_(ios)
-        , remote_sock_(ios, ctx)
+    session(net::io_context& ios, 
+            net::ssl::context& ctx, 
+            session_manager& mgr, 
+            std::string_view remote_host, 
+            std::string_view remote_service)
+        : resolver_{ios}
+        , local_sock_{ios}
+        , remote_sock_{ios, ctx}
         , manager_{mgr}
         , remote_host_{remote_host}
-        , remote_service_{remote_service} {
+        , remote_service_{remote_service} 
+    {
         remote_ep_ = remote_host_ + ':' + remote_service_;
         remote_sock_.set_verify_mode(net::ssl::verify_peer);
         remote_sock_.set_verify_callback(std::bind(&session::verify_certificate, this, _1, _2));
@@ -149,19 +154,6 @@ private:
 
     bool verify_certificate(bool preverified, net::ssl::verify_context& ctx)
     {
-        // In this example we will simply print the certificate's subject name.
-        //char subject_name[256];
-        //X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
-        //X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-        //std::cout << "Verifying " << subject_name << "\n";
-
-
-        //X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
-
-        //int rc = X509_verify(cert, m_cfg->nodes[0].pident_key);
-        //if (rc == 1)
-        //    preverified = true;
-
         return preverified;
     }
 
