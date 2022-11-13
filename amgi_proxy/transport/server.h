@@ -1,5 +1,5 @@
-#ifndef SOCKS5_PROXY_SERVER_H
-#define SOCKS5_PROXY_SERVER_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include "stream_manager.h"
 
@@ -32,4 +32,4 @@ private:
 };
 
 
-#endif //SOCKS5_PROXY_SERVER_H
+#endif //SERVER_H

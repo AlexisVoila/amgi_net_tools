@@ -7,7 +7,8 @@
 using fmt = boost::format;
 using logger = logging::logger;
 
-void http_stream_manager::stop(stream_ptr stream) {
+void http_stream_manager::stop(stream_ptr stream) 
+{
     stop(stream->id());
 }
 
@@ -33,11 +34,13 @@ void http_stream_manager::stop(int id)
     }
 }
 
-void http_stream_manager::on_close(stream_ptr stream) {
+void http_stream_manager::on_close(stream_ptr stream) 
+{
     stop(stream);
 }
 
-void http_stream_manager::on_error(sys::error_code ec, server_stream_ptr stream) {
+void http_stream_manager::on_error(sys::error_code ec, server_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_error(ec);
 }
@@ -48,7 +51,8 @@ void http_stream_manager::on_error(sys::error_code ec, client_stream_ptr stream)
         it->second.handle_client_error(ec);
 }
 
-void http_stream_manager::on_accept(server_stream_ptr upstream) {
+void http_stream_manager::on_accept(server_stream_ptr upstream) 
+{
     upstream->start();
     const auto id{upstream->id()};
     logger::trace((fmt("[%1%] session created") % id).str());
@@ -62,52 +66,62 @@ void http_stream_manager::on_accept(server_stream_ptr upstream) {
     states_.insert({id, std::move(session)});
 }
 
-void http_stream_manager::on_read(io_event event, server_stream_ptr stream) {
+void http_stream_manager::on_read(io_event event, server_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_read(event);
 }
 
-void http_stream_manager::on_write(io_event event, server_stream_ptr stream) {
+void http_stream_manager::on_write(io_event event, server_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_write(event);
 }
 
-void http_stream_manager::read_server(int id) {
+void http_stream_manager::read_server(int id) 
+{
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.server->read();
 }
 
-void http_stream_manager::write_server(int id, io_event event) {
+void http_stream_manager::write_server(int id, io_event event) 
+{
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.server->write(std::move(event));
 }
 
-void http_stream_manager::on_read(io_event event, client_stream_ptr stream) {
+void http_stream_manager::on_read(io_event event, client_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_read(event);
 }
 
-void http_stream_manager::on_write(io_event event, client_stream_ptr stream) {
+void http_stream_manager::on_write(io_event event, client_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_write(event);
 }
 
-void http_stream_manager::on_connect(io_event event, client_stream_ptr stream) {
+void http_stream_manager::on_connect(io_event event, client_stream_ptr stream) 
+{
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_connect(event);
 }
 
-void http_stream_manager::read_client(int id) {
+void http_stream_manager::read_client(int id) 
+{
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.client->read();
 }
 
-void http_stream_manager::write_client(int id, io_event event) {
+void http_stream_manager::write_client(int id, io_event event) 
+{
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.client->write(std::move(event));
 }
 
-void http_stream_manager::connect(int id, std::string host, std::string service) {
+void http_stream_manager::connect(int id, std::string host, std::string service) 
+{
     if (auto it = sessions_.find(id); it != sessions_.end()) {
         it->second.client->set_host(std::move(host));
         it->second.client->set_service(std::move(service));

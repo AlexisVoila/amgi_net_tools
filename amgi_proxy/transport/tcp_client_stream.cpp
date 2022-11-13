@@ -1,6 +1,7 @@
 #include "tcp_client_stream.h"
 #include "stream_manager.h"
-#include "../logger/logger.h"
+#include "logger/logger.h"
+
 #include <boost/format.hpp>
 
 using fmt = boost::format;

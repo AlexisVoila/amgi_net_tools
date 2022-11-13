@@ -7,7 +7,8 @@
 
 class http_stream_manager final
     : public stream_manager
-    , public std::enable_shared_from_this<http_stream_manager> {
+    , public std::enable_shared_from_this<http_stream_manager> 
+{
 public:
     http_stream_manager() = default;
     ~http_stream_manager() = default;

@@ -2,6 +2,7 @@
 #define HTTP_SESSION_H
 
 #include "http_state.h"
+
 #include <string>
 
 class stream_manager;

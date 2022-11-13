@@ -2,7 +2,6 @@
 #include "transport/tls/tls_server.h"
 #include "socks5/socks5_stream_manager.h"
 #include "http/http_stream_manager.h"
-
 #include "logger/logger.h"
 
 #include <boost/program_options.hpp>
