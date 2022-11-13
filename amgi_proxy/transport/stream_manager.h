@@ -1,5 +1,5 @@
-#ifndef SOCKS5_PROXY_STREAM_MANAGER_H
-#define SOCKS5_PROXY_STREAM_MANAGER_H
+#ifndef STREAM_MANAGER_H
+#define STREAM_MANAGER_H
 
 #include "server_stream.h"
 #include "client_stream.h"
@@ -35,4 +35,4 @@ public:
 using stream_manager_ptr = std::shared_ptr<stream_manager>;
 
 
-#endif //SOCKS5_PROXY_STREAM_MANAGER_H
+#endif // STREAM_MANAGER_H

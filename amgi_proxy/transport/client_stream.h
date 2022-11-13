@@ -1,11 +1,12 @@
-#ifndef SOCKS5_PROXY_CLIENT_STREAM_H
-#define SOCKS5_PROXY_CLIENT_STREAM_H
+#ifndef CLIENT_STREAM_H
+#define CLIENT_STREAM_H
 
-
-#include <string>
 #include "stream.h"
 
-class client_stream : public stream, public std::enable_shared_from_this<client_stream> {
+#include <string>
+
+class client_stream : public stream, public std::enable_shared_from_this<client_stream> 
+{
 public:
     client_stream(const stream_manager_ptr& smp, int id) : stream(smp, id) {}
 
@@ -21,4 +22,4 @@ using client_stream_ptr = std::shared_ptr<client_stream>;
 
 
 
-#endif //SOCKS5_PROXY_CLIENT_STREAM_H
+#endif //CLIENT_STREAM_H

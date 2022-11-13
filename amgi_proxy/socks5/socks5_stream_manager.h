@@ -7,7 +7,8 @@
 
 class socks5_stream_manager final
     : public stream_manager
-    , public std::enable_shared_from_this<socks5_stream_manager> {
+    , public std::enable_shared_from_this<socks5_stream_manager> 
+{
 public:
     socks5_stream_manager() = default;
     ~socks5_stream_manager() = default;

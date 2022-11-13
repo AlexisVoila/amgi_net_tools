@@ -1,13 +1,15 @@
-#ifndef SOCKS5_PROXY_STREAM_H
-#define SOCKS5_PROXY_STREAM_H
+#ifndef STREAM_H
+#define STREAM_H
 
 #include "io_event.h"
+
 #include <memory>
 
 class stream_manager;
 using stream_manager_ptr = std::shared_ptr<stream_manager>;
 
-class stream {
+class stream 
+{
 public:
     enum {
         max_buffer_size = 0x4000
@@ -44,4 +46,4 @@ using stream_ptr = std::shared_ptr<stream>;
 
 
 
-#endif //SOCKS5_PROXY_STREAM_H
+#endif //STREAM_H

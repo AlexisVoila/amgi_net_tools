@@ -44,6 +44,11 @@ if(MSVC)
 		"$<$<CONFIG:Release>:/OPT:REF>"
 		"$<$<CONFIG:Release>:/OPT:ICF>"
 	)
+
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        "/EHsc"
+    )
+
 endif()
 
  if (UNIX)

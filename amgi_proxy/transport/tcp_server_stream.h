@@ -1,7 +1,8 @@
-#ifndef SOCKS5_PROXY_TCP_SERVER_STREAM_H
-#define SOCKS5_PROXY_TCP_SERVER_STREAM_H
+#ifndef TCP_SERVER_STREAM_H
+#define TCP_SERVER_STREAM_H
 
 #include "server_stream.h"
+
 #include <boost/asio.hpp>
 
 namespace net = boost::asio;
@@ -31,4 +32,4 @@ private:
     std::array<std::uint8_t, max_buffer_size> write_buffer_;
 };
 
-#endif //SOCKS5_PROXY_TCP_SERVER_STREAM_H
+#endif //TCP_SERVER_STREAM_H

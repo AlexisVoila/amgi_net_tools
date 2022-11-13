@@ -71,19 +71,6 @@ namespace
     }
 }
 
-//void print_usage() {
-//    std::cout << "Usage: \n\ttcp_to_tls_forwarder <listen_port> <destination_host> <destination_port>\n";
-//    std::cout << "Example 1: \n\ttcp_to_tls_forwarder 2000 127.0.0.1 22\n";
-//    std::cout << "Example 2: \n\ttcp_to_tls_forwarder 8443 google.com https\n";
-//}
-//
-//std::uint16_t get_port_from_cmd_line(const char* arg) {
-//    std::uint16_t number{0};
-//    std::string_view arg_str{arg};
-//    std::from_chars(arg_str.data(), arg_str.data() + arg_str.size(), number);
-//    return number;
-//}
-
 int main(int argc, char* argv[])
 {
     const auto conf = parse_command_line_arguments(argc, argv);
@@ -91,10 +78,6 @@ int main(int argc, char* argv[])
     std::locale::global(std::locale(""));
 
     try {
-        //server srv(io_context, src_port, argv[2], argv[3]);
-        //server srv(io_context, src_port, "127.0.0.1", "8443");
-        //server srv(io_context, src_port, "127.0.0.1", "50883");
-        //server srv(src_port, "89.22.229.200", "50883");
         server srv(conf.listen_port, conf.target_host, conf.target_port, conf.tls_options);
         srv.run();
     }

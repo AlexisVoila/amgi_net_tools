@@ -38,4 +38,4 @@ private:
     stream_manager_ptr manager_;
 };
 
-#endif // SOCKS5_SESSION_H
+#endif //SOCKS5_SESSION_H

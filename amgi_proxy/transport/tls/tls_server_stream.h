@@ -1,5 +1,5 @@
-#ifndef SSL_SERVER_STREAM_H
-#define SSL_SERVER_STREAM_H
+#ifndef TLS_SERVER_STREAM_H
+#define TLS_SERVER_STREAM_H
 
 #include "transport/server_stream.h"
 
@@ -11,7 +11,8 @@ namespace sys = boost::system;
 using tcp = boost::asio::ip::tcp;
 using ssl_socket = net::ssl::stream<net::ip::tcp::socket>;
 
-class tls_server_stream final : public server_stream {
+class tls_server_stream final : public server_stream 
+{
 public:
     tls_server_stream(const stream_manager_ptr& ptr, int id, net::io_context& ctx, net::ssl::context& ssl_ctx);
     ~tls_server_stream() override;
@@ -35,4 +36,4 @@ private:
     std::array<std::uint8_t, max_buffer_size> write_buffer_;
 };
 
-#endif //SSL_SERVER_STREAM_H
+#endif //TLS_SERVER_STREAM_H
