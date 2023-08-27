@@ -53,6 +53,7 @@ class session
         , remote_service_{remote_service} 
     {
         remote_ep_ = remote_host_ + ':' + remote_service_;
+        //remote_sock_.set_verify_mode(net::ssl::verify_none);
         remote_sock_.set_verify_mode(net::ssl::verify_peer);
         remote_sock_.set_verify_callback(std::bind(&session::verify_certificate, this, _1, _2));
     }

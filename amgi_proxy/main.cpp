@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
         }
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
+        logging::logger::fatal(std::string{"fatal error: "} + ex.what());
     }
 
     return 0;

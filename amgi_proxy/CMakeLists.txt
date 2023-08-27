@@ -72,6 +72,7 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE 
         "/EHsc"
     )
+    set(CMAKE_VS_JUST_MY_CODE_DEBUGGING "$<$<CONFIG:Debug>:ON>")
 endif()
 
 target_link_libraries(${PROJECT_NAME} 

@@ -16,13 +16,15 @@ tls_server::tls_server(const std::string& port, tls_options settings, stream_man
                          net::ssl::context::no_tlsv1_1 |
                          net::ssl::context::no_tlsv1_2);
 
-    const auto rc = SSL_CTX_set_min_proto_version(ssl_ctx_.native_handle(), TLS1_3_VERSION);
-
     //ssl_ctx_.set_password_callback(std::bind(&tls_server::get_password, this));
     //ssl_ctx_.use_certificate_chain_file(cert_path.data()); //"server.pem");
+    //ssl_ctx_.use_certificate_file(settings.server_cert, net::ssl::context::pem);
 
+    const auto rc = SSL_CTX_set_min_proto_version(ssl_ctx_.native_handle(), TLS1_3_VERSION);
+
+    ssl_ctx_.use_certificate_chain_file(settings.server_cert);
+    SSL_CTX_set_client_CA_list(ssl_ctx_.native_handle(), SSL_load_client_CA_file(settings.ca_cert.c_str()));
     ssl_ctx_.use_private_key_file(settings.private_key, net::ssl::context::pem);
-    ssl_ctx_.use_certificate_file(settings.server_cert, net::ssl::context::pem);
     ssl_ctx_.load_verify_file(settings.ca_cert);
     ssl_ctx_.set_verify_mode(net::ssl::verify_peer | net::ssl::verify_fail_if_no_peer_cert);
 
@@ -74,8 +76,15 @@ void tls_server::start_accept()
     acceptor_.async_accept(
         new_stream->socket(),
         [this, new_stream](const sys::error_code& ec) {
-            if (!acceptor_.is_open())
+            if (!acceptor_.is_open()) {
+                logging::logger::trace("tls proxy server acceptor is closed");
+                if (ec) {
+                    std::string serr{"tls proxy server error: " + ec.message()};
+                    logging::logger::trace(serr);
+                }
+
                 return;
+            }
 
             if (!ec)
                 stream_manager_->on_accept(new_stream);
@@ -86,6 +95,6 @@ void tls_server::start_accept()
 
 tls_server::~tls_server() 
 {
-    logging::logger::trace("proxy server stopped");
+    logging::logger::trace("tls proxy server stopped");
 }
 
