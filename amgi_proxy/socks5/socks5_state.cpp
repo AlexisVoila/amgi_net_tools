@@ -11,7 +11,7 @@ using logger = logging::logger;
 
 namespace
 {
-    std::uint8_t get_response_error_code(sys::error_code ec)
+    std::uint8_t get_response_error_code(net::error_code ec)
     {
         const auto errval = ec.value();
 
@@ -39,7 +39,7 @@ void socks5_state::handle_client_connect(socks5_session *session, io_event& even
 void socks5_state::handle_server_write(socks5_session *session, io_event& event) {}
 void socks5_state::handle_client_write(socks5_session *session, io_event& event) {}
 
-void socks5_state::handle_server_error(socks5_session* session, sys::error_code ec)
+void socks5_state::handle_server_error(socks5_session* session, net::error_code ec)
 {
     const auto& ctx = session->context();
 
@@ -61,7 +61,7 @@ void socks5_state::handle_server_error(socks5_session* session, sys::error_code 
     session->manager()->stop(ctx.id);
 }
 
-void socks5_state::handle_client_error(socks5_session* session, sys::error_code ec)
+void socks5_state::handle_client_error(socks5_session* session, net::error_code ec)
 {
     const auto& ctx = session->context();
 
@@ -136,7 +136,7 @@ void socks5_connection_established::handle_client_connect(socks5_session *sessio
     session->change_state(socks5_ready_to_transfer_data::instance());
 }
 
-void socks5_connection_established::handle_client_error(socks5_session* session, sys::error_code ec)
+void socks5_connection_established::handle_client_error(socks5_session* session, net::error_code ec)
 {
     auto& ctx = session->context();
     ctx.response[1] = get_response_error_code(ec);

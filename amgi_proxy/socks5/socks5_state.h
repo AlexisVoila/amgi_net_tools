@@ -3,10 +3,10 @@
 
 #include "transport/io_event.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <memory>
 
-namespace sys = boost::system;
+namespace net = asio;
 
 class socks5_session;
 
@@ -18,8 +18,8 @@ public:
     virtual void handle_client_connect(socks5_session *session, io_event& event);
     virtual void handle_server_write(socks5_session *session, io_event& event);
     virtual void handle_client_write(socks5_session *session, io_event& event);
-    virtual void handle_server_error(socks5_session* session, sys::error_code ec);
-    virtual void handle_client_error(socks5_session* session, sys::error_code ec);
+    virtual void handle_server_error(socks5_session* session, net::error_code ec);
+    virtual void handle_client_error(socks5_session* session, net::error_code ec);
 };
 
 class socks5_auth_request final : public socks5_state 
@@ -42,7 +42,7 @@ class socks5_connection_established final : public socks5_state
 public:
     static auto instance() { return std::make_unique<socks5_connection_established>(); }
     void handle_client_connect(socks5_session *session, io_event &event) override;
-    void handle_client_error(socks5_session* session, sys::error_code ec) override;
+    void handle_client_error(socks5_session* session, net::error_code ec) override;
     void handle_server_write(socks5_session* session, io_event& event) override;
 };
 

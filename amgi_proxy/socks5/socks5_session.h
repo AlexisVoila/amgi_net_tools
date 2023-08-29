@@ -25,8 +25,8 @@ public:
     void handle_server_write(io_event& event);
     void handle_client_write(io_event& event);
     void handle_client_connect(io_event& event);
-    void handle_server_error(sys::error_code ec);
-    void handle_client_error(sys::error_code ec);
+    void handle_server_error(net::error_code ec);
+    void handle_client_error(net::error_code ec);
 
     auto& context() { return context_; }
 

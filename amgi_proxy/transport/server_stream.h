@@ -4,9 +4,9 @@
 
 #include "stream.h"
 
-#include <boost/asio/executor.hpp>
+#include <asio/executor.hpp>
 
-namespace net = boost::asio;
+namespace net = asio;
 
 class server_stream : public stream, public std::enable_shared_from_this<server_stream> 
 {

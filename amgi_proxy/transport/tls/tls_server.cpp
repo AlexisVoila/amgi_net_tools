@@ -62,7 +62,7 @@ void tls_server::configure_signals()
 void tls_server::async_wait_signals() 
 {
     signals_.async_wait(
-        [this](sys::error_code /*ec*/, int /*signno*/) {
+        [this](net::error_code /*ec*/, int /*signno*/) {
             logging::logger::info("socks5-proxy tls_server stopping");
             acceptor_.close();
             ctx_.stop();
@@ -75,7 +75,7 @@ void tls_server::start_accept()
     auto new_stream = std::make_shared<tls_server_stream>(stream_manager_, ++stream_id_, ctx_, ssl_ctx_);
     acceptor_.async_accept(
         new_stream->socket(),
-        [this, new_stream](const sys::error_code& ec) {
+        [this, new_stream](const net::error_code& ec) {
             if (!acceptor_.is_open()) {
                 logging::logger::trace("tls proxy server acceptor is closed");
                 if (ec) {

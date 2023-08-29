@@ -3,11 +3,10 @@
 
 #include "server_stream.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
-using tcp = boost::asio::ip::tcp;
+namespace net = asio;
+using tcp = asio::ip::tcp;
 
 class tcp_server_stream final : public server_stream 
 {
@@ -23,7 +22,7 @@ private:
     void do_read() final;
     void do_write(io_event event) final;
 
-    void handle_error(const sys::error_code& ec);
+    void handle_error(const net::error_code& ec);
 
     net::io_context& ctx_;
     tcp::socket socket_;

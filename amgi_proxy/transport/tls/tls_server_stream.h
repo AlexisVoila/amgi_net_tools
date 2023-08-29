@@ -3,12 +3,11 @@
 
 #include "transport/server_stream.h"
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
-using tcp = boost::asio::ip::tcp;
+namespace net = asio;
+using tcp = asio::ip::tcp;
 using ssl_socket = net::ssl::stream<net::ip::tcp::socket>;
 
 class tls_server_stream final : public server_stream 
@@ -26,7 +25,7 @@ private:
     void do_read() final;
     void do_write(io_event event) final;
 
-    void handle_error(const sys::error_code& ec);
+    void handle_error(const net::error_code& ec);
 
     net::io_context& ctx_;
     net::ssl::context& ssl_ctx_;

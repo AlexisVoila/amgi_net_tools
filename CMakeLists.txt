@@ -49,6 +49,15 @@ else()
     message(FATAL "OpenSSL Not Found")
 endif()
 
+add_library(asio INTERFACE)
+target_include_directories(asio INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/asio/asio/include")
+if (UNIX)
+    find_package(Threads)
+    target_link_libraries(asio INTERFACE Threads::Threads)
+endif()
+
+
 # Include sub-projects.
-add_subdirectory ("amgi_tunnel")
-add_subdirectory ("amgi_proxy")
+add_subdirectory("thirdparty/cli_tools")
+add_subdirectory("amgi_tunnel")
+add_subdirectory("amgi_proxy")

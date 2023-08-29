@@ -53,6 +53,23 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
+# If the Asio target has not been created before, then create it
+if (NOT (TARGET asio))
+    add_library(asio INTERFACE)
+    target_include_directories(asio 
+        INTERFACE 
+            "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/asio/asio/include"
+    )
+    if (UNIX)
+        find_package(Threads)
+        target_link_libraries(asio INTERFACE Threads::Threads)
+    endif()
+endif()
+
+# Add external required library dependencies
+add_dependencies(${PROJECT_NAME} asio)
+target_link_libraries(${PROJECT_NAME} PUBLIC asio)
+
 if (MSVC)
     target_compile_definitions(${PROJECT_NAME} PRIVATE 
         "_WIN32_WINNT=0x0A00"

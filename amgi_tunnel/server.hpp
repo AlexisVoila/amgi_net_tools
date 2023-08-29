@@ -3,14 +3,13 @@
 
 #include "session.hpp"
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
 #include <charconv>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
-using tcp = boost::asio::ip::tcp;
+using tcp = asio::ip::tcp;
+namespace net = asio;
 
 class server 
 {
@@ -41,7 +40,6 @@ public:
         acceptor_.bind(ep);
         acceptor_.listen();
 
-
         start_accept();
     }
 
@@ -51,7 +49,7 @@ public:
 
         acceptor_.async_accept(
             new_session->socket(),
-            [this, new_session](const sys::error_code& ec) {
+            [this, new_session](const net::error_code& ec) {
                 if (!ec) {
                     new_session->start();
                 } else {
@@ -89,7 +87,7 @@ private:
     void start_wait_signals() 
     {
         signals_.async_wait(
-            [this](const sys::error_code& ec, int /*signo*/) {
+            [this](const net::error_code& ec, int /*signo*/) {
                 if (ec)
                     std::cout << ec.message() << std::endl;
 

@@ -3,11 +3,11 @@
 
 #include "transport/io_event.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
+
+namespace net = asio;
 
 #include <memory>
-
-namespace sys = boost::system;
 
 class http_session;
 
@@ -19,8 +19,8 @@ public:
     virtual void handle_client_connect(http_session *session, io_event& event);
     virtual void handle_server_write(http_session *session, io_event& event);
     virtual void handle_client_write(http_session *session, io_event& event);
-    virtual void handle_server_error(http_session* session, sys::error_code ec);
-    virtual void handle_client_error(http_session* session, sys::error_code ec);
+    virtual void handle_server_error(http_session* session, net::error_code ec);
+    virtual void handle_client_error(http_session* session, net::error_code ec);
 };
 
 class http_wait_request final : public http_state 

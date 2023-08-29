@@ -3,14 +3,13 @@
 
 #include "transport/stream_manager.h"
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
 #include <filesystem>
 
-using tcp = boost::asio::ip::tcp;
-namespace net = boost::asio;
-namespace sys = boost::system;
+namespace net = asio;
+using tcp = net::ip::tcp;
 namespace fs = std::filesystem;
 
 class tls_server 

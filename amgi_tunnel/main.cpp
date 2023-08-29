@@ -1,11 +1,9 @@
 #include "server.hpp"
 
-#include <boost/program_options.hpp>
+#include <cli_parser.h>
 
 #include <iostream>
 #include <charconv>
-
-namespace po = boost::program_options;
 
 namespace
 {
@@ -17,63 +15,42 @@ namespace
         server::tls_options tls_options;
     };
 
-    server_conf parse_command_line_arguments(int argc, char* argv[])
+    server_conf parse_command_line_arguments_new(int argc, char* argv[])
     {
-        po::options_description all("Allowed options");
+        server_conf srv_conf{};
 
-        server_conf conf;
-        po::options_description general("General options");
-        general.add_options()
-            ("listen-port,l", po::value<std::string>(&conf.listen_port)->default_value("2080")->required(), "tls forwarder listen port number")
-            ("target-port,t", po::value<std::string>(&conf.target_port)->default_value("8443")->required(), "tls forwarder target port number")
-            ("target-host,d", po::value<std::string>(&conf.target_host)->default_value("127.0.0.1")->required(), "tls forwarder target host")
-            ("help,h", "show help message");
+        using namespace cli;
 
-        po::options_description tls("Tls tunnel options");
-        tls.add_options()
-            ("private-key,p", po::value<std::string>(&conf.tls_options.private_key)->default_value(""), "private key file path (pem format)")
-            ("client-cert,s", po::value<std::string>(&conf.tls_options.client_cert)->default_value(""), "client certificate file path (pem format)")
-            ("ca-cert,c", po::value<std::string>(&conf.tls_options.ca_cert)->default_value(""), "CA certificate file path (pem format)");
+        cli::ParamParser argParser;
 
-        all.add(general).add(tls);
+        argParser
+            .add_parameter(Param("h,help").flag().description("Show help message"))
+            .add_parameter(Param("l,listen-port").required().default_value("2080").description("tls forwarder listen port number"))
+            .add_parameter(Param("t,target-port").required().default_value("8443").description("tls forwarder target port number"))
+            .add_parameter(Param("d,target-host").required().default_value("127.0.0.1").description("tls forwarder target host"))
+            .add_parameter(Param("p,private-key").required().description("private key file path (pem format)"))
+            .add_parameter(Param("s,client-cert").required().description("client certificate file path (pem format)"))
+            .add_parameter(Param("c,ca-cert").required().description("CA certificate file path (pem format)"));
 
-        po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, all), vm);
-        if (vm.count("help")) {
-            std::cout << all << "\n";
-            exit(EXIT_SUCCESS);
+        if (const auto msg = argParser.parse(argc, argv)) {
+            std::cout << *msg << std::endl;
+            argParser.print_help();
+        } else {
+            srv_conf.tls_options.private_key = argParser.arg("p").get_value_as_str();
+            srv_conf.tls_options.client_cert = argParser.arg("s").get_value_as_str();
+            srv_conf.tls_options.ca_cert = argParser.arg("c").get_value_as_str();
+            srv_conf.listen_port = argParser.arg("l").get_value_as_str();
+            srv_conf.target_host = argParser.arg("d").get_value_as_str();
+            srv_conf.target_port = argParser.arg("t").get_value_as_str();
         }
 
-        try {
-            po::notify(vm);
-        }
-        catch (const po::required_option& e) {
-            std::cout << "Error: " << e.what() << "\n";
-            exit(EXIT_FAILURE);
-        }
-
-        if (conf.tls_options.private_key.empty()) {
-            std::cout << "The <private-key> parameter must be specified\n";
-            exit(EXIT_FAILURE);
-        }
-
-        if (conf.tls_options.client_cert.empty()) {
-            std::cout << "The <server-cert> parameter must be specified\n";
-            exit(EXIT_FAILURE);
-        }
-
-        if (conf.tls_options.ca_cert.empty()) {
-            std::cout << "The <ca-cert> parameter must be specified\n";
-            exit(EXIT_FAILURE);
-        }
-
-        return conf;
+        return srv_conf;
     }
 }
 
 int main(int argc, char* argv[])
 {
-    const auto conf = parse_command_line_arguments(argc, argv);
+    const auto conf = parse_command_line_arguments_new(argc, argv);
 
     std::locale::global(std::locale(""));
 

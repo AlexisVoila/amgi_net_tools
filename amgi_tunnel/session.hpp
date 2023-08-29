@@ -3,15 +3,14 @@
 
 #include "manager.hpp"
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
 #include <iostream>
 #include <array>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
-using tcp = boost::asio::ip::tcp;
+using tcp = asio::ip::tcp;
+namespace net = asio;
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -53,7 +52,6 @@ class session
         , remote_service_{remote_service} 
     {
         remote_ep_ = remote_host_ + ':' + remote_service_;
-        //remote_sock_.set_verify_mode(net::ssl::verify_none);
         remote_sock_.set_verify_mode(net::ssl::verify_peer);
         remote_sock_.set_verify_callback(std::bind(&session::verify_certificate, this, _1, _2));
     }
@@ -99,17 +97,17 @@ public:
 private:
     void close() 
     {
-        sys::error_code ignored_ec;
+        net::error_code ignored_ec;
         if (local_sock_.is_open()) {
             local_sock_.shutdown(net::socket_base::shutdown_both, ignored_ec);
             local_sock_.close();
         }
 
         if (remote_sock_.lowest_layer().is_open()) {
-            sys::error_code ec;
+            net::error_code ec;
             remote_sock_.lowest_layer().cancel(ec);
             remote_sock_.async_shutdown(
-                [this, self{shared_from_this()}](const sys::error_code& ec) {
+                [this, self{shared_from_this()}](const net::error_code& ec) {
                     if (ec && ec.category() == net::error::get_ssl_category()) {
                         if (ec != net::error::operation_aborted/* && ec != net::error::bad_descriptor*/) {
                             std::string msg = ec.message();
@@ -120,7 +118,7 @@ private:
                 });
             net::async_write(
                 remote_sock_, net::null_buffers{},
-                [this, self{shared_from_this()}](const sys::error_code& ec, std::size_t trans_bytes) { 
+                [this, self{shared_from_this()}](const net::error_code& ec, std::size_t trans_bytes) { 
                     if (ec && ec.category() == net::error::get_ssl_category()) {
                         if (ec != net::error::operation_aborted/* && ec != net::error::bad_descriptor*/)
                         {
@@ -136,10 +134,10 @@ private:
     void close_ssl() 
     {
         if (remote_sock_.lowest_layer().is_open()) {
-            sys::error_code ec;
+            net::error_code ec;
             remote_sock_.lowest_layer().cancel(ec);
             remote_sock_.async_shutdown(
-                [this, self{shared_from_this()}](const sys::error_code& ec) {
+                [this, self{shared_from_this()}](const net::error_code& ec) {
                     if (ec) {
                         if (ec != net::error::operation_aborted && ec != net::error::bad_descriptor) {
                             std::string msg = ec.message();
@@ -163,7 +161,7 @@ private:
         //std::cout << "start handshake with: " << remote_resolved_ep_ << std::endl;
         remote_sock_.async_handshake(
             net::ssl::stream_base::client,
-            [this, self{shared_from_this()}](const sys::error_code& error) {
+            [this, self{shared_from_this()}](const net::error_code& error) {
                 if (!error) {
                     //std::cout << "handshake ok: " << remote_resolved_ep_ << std::endl;
                     do_read_from_local();
@@ -179,7 +177,7 @@ private:
     {
         resolver_.async_resolve(
             remote_host_, remote_service_,
-            [this, self{shared_from_this()}](const sys::error_code& ec, const tcp::resolver::results_type& eps) {
+            [this, self{shared_from_this()}](const net::error_code& ec, const tcp::resolver::results_type& eps) {
                 if (!ec) {
                     do_connect(eps);
                 } else {
@@ -192,7 +190,7 @@ private:
     void do_connect(const tcp::resolver::results_type& eps) {
         net::async_connect(
             remote_sock_.lowest_layer(), eps,
-            [this, self{shared_from_this()}](const sys::error_code& ec, const tcp::endpoint& /*ep*/) {
+            [this, self{shared_from_this()}](const net::error_code& ec, const tcp::endpoint& /*ep*/) {
                 tcp::endpoint to_ep{remote_sock_.lowest_layer().remote_endpoint()};
                 remote_resolved_ep_ = '(' + to_ep.address().to_string() + ':' + std::to_string(to_ep.port()) + ')';
                 std::cout << "connection from " << client_ep_ << " to "
@@ -209,7 +207,7 @@ private:
     void do_read_from_local() {
         local_sock_.async_read_some(
             net::buffer(local_buffer_),
-            [this, self{shared_from_this()}](const sys::error_code& ec, std::size_t bytes_transferred) {
+            [this, self{shared_from_this()}](const net::error_code& ec, std::size_t bytes_transferred) {
                 if (!ec && bytes_transferred > 0) {
                     do_write_to_remote(bytes_transferred);
                 } else {
@@ -221,7 +219,7 @@ private:
     void do_read_from_remote() {
         remote_sock_.async_read_some(
             net::buffer(remote_buffer_),
-            [this, self{shared_from_this()}](const sys::error_code& ec, std::size_t bytes_transferred) {
+            [this, self{shared_from_this()}](const net::error_code& ec, std::size_t bytes_transferred) {
                 if (!ec && bytes_transferred > 0) {
                     do_write_to_local(bytes_transferred);
                 } else {
@@ -233,7 +231,7 @@ private:
     void do_write_to_remote(std::size_t bytes_transferred) {
         net::async_write(
             remote_sock_, net::buffer(local_buffer_.data(), bytes_transferred),
-            [this, self{shared_from_this()}](const sys::error_code& ec, std::size_t bytes_transferred) {
+            [this, self{shared_from_this()}](const net::error_code& ec, std::size_t bytes_transferred) {
                 if (!ec && bytes_transferred > 0) {
                     do_read_from_local();
                 } else {
@@ -245,7 +243,7 @@ private:
     void do_write_to_local(std::size_t bytes_transferred) {
         net::async_write(
             local_sock_, net::buffer(remote_buffer_.data(), bytes_transferred),
-            [this, self{shared_from_this()}](const sys::error_code& ec, std::size_t bytes_transferred) {
+            [this, self{shared_from_this()}](const net::error_code& ec, std::size_t bytes_transferred) {
                 if (!ec && bytes_transferred > 0) {
                     do_read_from_remote();
                 } else {

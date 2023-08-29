@@ -24,7 +24,7 @@ void http_state::handle_client_connect(http_session* session, io_event& event) {
 void http_state::handle_server_write(http_session* session, io_event& event) {}
 void http_state::handle_client_write(http_session* session, io_event& event) {}
 
-void http_state::handle_server_error(http_session* session, sys::error_code ec) 
+void http_state::handle_server_error(http_session* session, net::error_code ec) 
 {
     const auto error = ec.value();
     const auto msg = ec.message();
@@ -44,7 +44,7 @@ void http_state::handle_server_error(http_session* session, sys::error_code ec)
     session->manager()->stop(session->context().id);
 }
 
-void http_state::handle_client_error(http_session* session, sys::error_code ec) 
+void http_state::handle_client_error(http_session* session, net::error_code ec) 
 {
     const auto error = ec.value();
     const auto msg = ec.message();

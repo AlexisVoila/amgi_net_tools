@@ -39,13 +39,13 @@ void http_stream_manager::on_close(stream_ptr stream)
     stop(stream);
 }
 
-void http_stream_manager::on_error(sys::error_code ec, server_stream_ptr stream) 
+void http_stream_manager::on_error(net::error_code ec, server_stream_ptr stream) 
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_error(ec);
 }
 
-void http_stream_manager::on_error(sys::error_code ec, client_stream_ptr stream)
+void http_stream_manager::on_error(net::error_code ec, client_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_error(ec);

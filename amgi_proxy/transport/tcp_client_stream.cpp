@@ -7,12 +7,34 @@
 using fmt = boost::format;
 using logger = logging::logger;
 
+namespace
+{
+    enum : std::int32_t { eRemote, eLocal };
+    std::string ep_to_str(const tcp::socket& sock, std::int32_t dir)
+    {
+        if (!sock.is_open())
+            return "socket not opened";
+
+        net::error_code ec;
+        const auto& rep = (dir == eRemote) ? sock.remote_endpoint(ec) : sock.local_endpoint(ec);
+        if (ec)
+        {
+            std::stringstream ss;
+            ss << (dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ";
+            ss << ec.message();
+            return ss.str();
+        }
+
+        net::error_code ignored_ec;
+        return { rep.address().to_string(ignored_ec) + ":" + std::to_string(rep.port()) };
+    }
+}
+
 tcp_client_stream::tcp_client_stream(const stream_manager_ptr& ptr, int id, net::io_context& ctx)
     : client_stream{ptr, id}
     , socket_{ctx}
     , resolver_{ctx}, read_buffer_{}, write_buffer_{} 
-{
-}
+{}
 
 tcp_client_stream::~tcp_client_stream() 
 {
@@ -24,7 +46,7 @@ void tcp_client_stream::do_start()
 {
     resolver_.async_resolve(
         host_, port_,
-        [this, self{shared_from_this()}] (const sys::error_code& ec, tcp::resolver::results_type results) {
+        [this, self{shared_from_this()}] (const net::error_code& ec, tcp::resolver::results_type results) {
             if (!ec) {
                 do_connect(std::move(results));
             } else {
@@ -35,7 +57,7 @@ void tcp_client_stream::do_start()
 
 void tcp_client_stream::do_stop() 
 {
-    sys::error_code ignored_ec;
+    net::error_code ignored_ec;
     socket_.shutdown(tcp::socket::shutdown_both, ignored_ec);
 }
 
@@ -43,10 +65,10 @@ void tcp_client_stream::do_connect(tcp::resolver::results_type&& results)
 {
     net::async_connect(
         socket_, results,
-        [this, self{shared_from_this()}](const sys::error_code& ec, const tcp::endpoint& ep) {
+        [this, self{shared_from_this()}](const net::error_code& ec, const tcp::endpoint& ep) {
             if (!ec) {
-                logger::info((fmt("[%1%] connected to [%2%] --> [%3%]") % id() % host_ % socket_.remote_endpoint()));
-                logger::debug((fmt("[%1%] local address [%2%]") % id() % socket_.local_endpoint()));
+                logger::info((fmt("[%1%] connected to [%2%] --> [%3%]") % id() % host_ % ep_to_str(socket_, eRemote)));
+                logger::debug((fmt("[%1%] local address [%2%]") % id() % ep_to_str(socket_, eLocal)));
                 io_event event{};
                 manager()->on_connect(std::move(event), shared_from_this());
             } else {
@@ -60,7 +82,7 @@ void tcp_client_stream::do_write(io_event event)
     copy(event.begin(), event.end(), write_buffer_.begin());
     net::async_write(
         socket_, net::buffer(write_buffer_, event.size()),
-        [this, self{shared_from_this()}] (const sys::error_code& ec, std::size_t) {
+        [this, self{shared_from_this()}] (const net::error_code& ec, std::size_t) {
             if (!ec) {
                 manager()->on_write(std::move(io_event{}), shared_from_this());
             } else {
@@ -73,7 +95,7 @@ void tcp_client_stream::do_read()
 {
     socket_.async_read_some(
         net::buffer(read_buffer_),
-        [this, self{shared_from_this()}] (const sys::error_code& ec, const std::size_t length) {
+        [this, self{shared_from_this()}] (const net::error_code& ec, const std::size_t length) {
             if (!ec && length) {
                 io_event event{read_buffer_.data(), read_buffer_.data() + length};
                 manager()->on_read(std::move(event), shared_from_this());
@@ -83,7 +105,7 @@ void tcp_client_stream::do_read()
         });
 }
 
-void tcp_client_stream::handle_error(const sys::error_code& ec) 
+void tcp_client_stream::handle_error(const net::error_code& ec) 
 {
     manager()->on_error(ec, shared_from_this());
 }

@@ -38,12 +38,12 @@ void socks5_session::handle_client_connect(io_event &event)
     state_->handle_client_connect(this, event);
 }
 
-void socks5_session::handle_server_error(sys::error_code ec)
+void socks5_session::handle_server_error(net::error_code ec)
 {
     state_->handle_server_error(this, ec);
 }
 
-void socks5_session::handle_client_error(sys::error_code ec)
+void socks5_session::handle_client_error(net::error_code ec)
 {
     state_->handle_client_error(this, ec);
 }

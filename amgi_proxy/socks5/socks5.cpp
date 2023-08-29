@@ -1,9 +1,8 @@
 #include "socks5.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
+namespace net = asio;
 
 using namespace proto;
 
@@ -54,7 +53,7 @@ bool socks5::get_remote_address_info(const std::uint8_t *buffer, std::size_t len
     if (length >= proto::request_header_min_length) {
         auto req = reinterpret_cast<const request_header*>(buffer);
 
-        sys::error_code ec;
+        net::error_code ec;
         char host_buffer[proto::max_dom_length] = {0};
         auto binaryAddress = reinterpret_cast<const char*>(&req->data[0]);
 

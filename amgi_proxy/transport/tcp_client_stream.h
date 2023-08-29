@@ -3,11 +3,10 @@
 
 #include "client_stream.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
-namespace net = boost::asio;
-namespace sys = boost::system;
-using tcp = boost::asio::ip::tcp;
+namespace net = asio;
+using tcp = asio::ip::tcp;
 
 class tcp_client_stream final : public client_stream 
 {
@@ -24,7 +23,7 @@ private:
     void do_read() final;
     void do_write(io_event event) final;
 
-    void handle_error(const sys::error_code& ec);
+    void handle_error(const net::error_code& ec);
 
     void do_set_host(std::string host) final;
     void do_set_service(std::string service) final;

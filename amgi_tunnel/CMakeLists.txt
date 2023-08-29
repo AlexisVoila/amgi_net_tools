@@ -6,9 +6,6 @@ add_executable(${PROJECT_NAME} "")
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-# Asking Boost for information about automatic link requests
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
-
 target_sources(${PROJECT_NAME} PRIVATE
     manager.hpp
     session.hpp
@@ -16,7 +13,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(${PROJECT_NAME} 
     PUBLIC ${OPENSSL_INCLUDE_DIR}
@@ -24,10 +20,27 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} 
-    PRIVATE ${Boost_LIBRARIES} 
     PRIVATE OpenSSL::SSL 
     PRIVATE OpenSSL::Crypto
 )
+
+# If the Asio target has not been created before, then create it
+if (NOT (TARGET asio))
+    add_library(asio INTERFACE)
+    target_include_directories(asio 
+        INTERFACE 
+            "${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/asio/asio/include"
+    )
+    if (UNIX)
+        find_package(Threads)
+        target_link_libraries(asio INTERFACE Threads::Threads)
+    endif()
+endif()
+
+# Add external required library dependencies
+add_dependencies(${PROJECT_NAME} asio)
+target_link_libraries(${PROJECT_NAME} PRIVATE asio)
+target_link_libraries(${PROJECT_NAME} PRIVATE cli_tools::parser)
 
 if(MSVC)
     target_compile_definitions(${PROJECT_NAME} PRIVATE 

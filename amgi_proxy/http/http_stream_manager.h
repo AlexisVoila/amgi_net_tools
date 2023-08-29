@@ -19,8 +19,8 @@ public:
     void stop(stream_ptr stream) override;
     void stop(int id) override;
     void on_close(stream_ptr stream) override;
-    void on_error(sys::error_code ec, server_stream_ptr stream) override;
-    void on_error(sys::error_code ec, client_stream_ptr stream) override;
+    void on_error(net::error_code ec, server_stream_ptr stream) override;
+    void on_error(net::error_code ec, client_stream_ptr stream) override;
 
     void on_accept(server_stream_ptr stream) override;
     void on_read(io_event event, server_stream_ptr stream) override;

@@ -3,11 +3,10 @@
 
 #include "stream_manager.h"
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
-using tcp = boost::asio::ip::tcp;
-namespace net = boost::asio;
-namespace sys = boost::system;
+using tcp = asio::ip::tcp;
+namespace net = asio;
 
 class server {
 public:
