@@ -7,7 +7,7 @@
 class session_base 
 {
 public:
-    virtual ~session_base() {}
+    virtual ~session_base() = default;
     virtual void stop() {}
 };
 
@@ -18,10 +18,10 @@ class session_manager
 public:
     void join(session_base_ptr ses) 
     {
-        sessions_.insert(ses);
+        sessions_.insert(std::move(ses));
     }
 
-    void leave(session_base_ptr ses) 
+    void leave(const session_base_ptr& ses)
     {
         ses->stop();
         sessions_.erase(ses);

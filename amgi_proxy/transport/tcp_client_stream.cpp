@@ -20,7 +20,7 @@ namespace
         if (ec)
         {
             std::stringstream ss;
-            ss << (dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ";
+            ss << ((dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ");
             ss << ec.message();
             return ss.str();
         }

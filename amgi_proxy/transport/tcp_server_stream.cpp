@@ -9,21 +9,16 @@ using logger = logging::logger;
 
 namespace
 {
-    enum : std::int32_t { eRemote, eLocal };
-    std::string ep_to_str(const tcp::socket& sock, std::int32_t dir)
+    std::string ep_to_str(const tcp::socket& sock)
     {
         if (!sock.is_open())
             return "socket not opened";
 
         net::error_code ec;
-        const auto& rep = (dir == eRemote) ? sock.remote_endpoint(ec) : sock.local_endpoint(ec);
+        const auto& rep = sock.remote_endpoint(ec);
+
         if (ec)
-        {
-            std::stringstream ss;
-            ss << (dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ";
-            ss << ec.message();
-            return ss.str();
-        }
+            return std::string{"remote_endpoint failed: " + ec.message()};
 
         net::error_code ignored_ec;
         return { rep.address().to_string(ignored_ec) + ":" + std::to_string(rep.port()) };
@@ -48,7 +43,7 @@ tcp::socket& tcp_server_stream::socket() { return socket_; }
 void tcp_server_stream::do_start() 
 {
     const auto str{(fmt("[%1%] incoming connection from socks5-client: [%2%]")
-                   % id() % ep_to_str(socket_, eRemote)).str()};
+                   % id() % ep_to_str(socket_)).str()};
     logger::debug(str);
     do_read();
 }

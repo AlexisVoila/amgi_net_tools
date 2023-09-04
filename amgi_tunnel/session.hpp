@@ -12,10 +12,52 @@
 using tcp = asio::ip::tcp;
 namespace net = asio;
 
-using std::placeholders::_1;
-using std::placeholders::_2;
+namespace
+{
+    using std::placeholders::_1;
+    using std::placeholders::_2;
 
-static size_t g_scount = 0;
+    size_t g_scount = 0;
+
+    enum : std::int32_t { eRemote, eLocal };
+    std::string ep_to_str(const tcp::socket& sock, std::int32_t dir)
+    {
+        if (!sock.is_open())
+            return "socket not opened";
+
+        net::error_code ec;
+        const auto& rep = (dir == eRemote) ? sock.remote_endpoint(ec) : sock.local_endpoint(ec);
+        if (ec)
+        {
+            std::stringstream ss;
+            ss << ((dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ");
+            ss << ec.message();
+            return ss.str();
+        }
+
+        net::error_code ignored_ec;
+        return { rep.address().to_string(ignored_ec) + ":" + std::to_string(rep.port()) };
+    }
+
+    std::string ep_to_str(const net::ssl::stream<tcp::socket>& sock, std::int32_t dir)
+    {
+        if (!sock.lowest_layer().is_open())
+            return "socket not opened";
+
+        net::error_code ec;
+        const auto& rep = (dir == eRemote) ? sock.lowest_layer().remote_endpoint(ec) : sock.lowest_layer().local_endpoint(ec);
+        if (ec)
+        {
+            std::stringstream ss;
+            ss << ((dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ");
+            ss << ec.message();
+            return ss.str();
+        }
+
+        net::error_code ignored_ec;
+        return { rep.address().to_string(ignored_ec) + ":" + std::to_string(rep.port()) };
+    }
+}
 
 class session 
     : public session_base
@@ -57,7 +99,7 @@ class session
     }
 
 public:
-    ~session() 
+    ~session() override
     {
         std::cout 
             << "connection from " 
@@ -81,8 +123,7 @@ public:
     void start() 
     {
         manager_.join(shared_from_this());
-        tcp::endpoint from_ep{local_sock_.remote_endpoint()};
-        client_ep_ = from_ep.address().to_string() + ':' + std::to_string(from_ep.port());
+        client_ep_ = ep_to_str(local_sock_, eRemote);
         std::cout 
             << "accepted connection from " << client_ep_ 
             << " , sescnt: " << manager_.ses_count() << ", scnt: " << ++g_scount << std::endl;
@@ -191,8 +232,7 @@ private:
         net::async_connect(
             remote_sock_.lowest_layer(), eps,
             [this, self{shared_from_this()}](const net::error_code& ec, const tcp::endpoint& /*ep*/) {
-                tcp::endpoint to_ep{remote_sock_.lowest_layer().remote_endpoint()};
-                remote_resolved_ep_ = '(' + to_ep.address().to_string() + ':' + std::to_string(to_ep.port()) + ')';
+                remote_resolved_ep_ = '(' + ep_to_str(remote_sock_, eRemote) + ')';
                 std::cout << "connection from " << client_ep_ << " to "
                     << remote_ep_ << remote_resolved_ep_ << " established\n";
                 if (!ec) {

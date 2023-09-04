@@ -130,8 +130,8 @@ int main(int argc, char* argv[])
             srv.run();
         } else {
             std::cout << "Start listening port: " << conf.listen_port << ", tls tunnel mode disabled\n";
-            server srv(conf.listen_port, std::move(proxy_backend));
-            srv.run();
+            //server srv(conf.listen_port, std::move(proxy_backend));
+            //srv.run();
         }
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
