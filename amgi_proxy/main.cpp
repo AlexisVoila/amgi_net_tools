@@ -20,7 +20,7 @@ namespace
         tls_server::tls_options tls_options;
     };
 
-    logger::level parse_log_level(const std::string level_str) 
+    logger::level parse_log_level(std::string_view level_str)
     {
         logger::level level;
 
@@ -107,12 +107,11 @@ int main(int argc, char* argv[])
 {
     const auto conf = parse_command_line_arguments(argc, argv);
 
-    using logger = logging::logger;
-    logger::output log_output = conf.log_file_path.empty()
-        ? logger::output::console
-        : logger::output::file;
+    logging::logger::output log_output = conf.log_file_path.empty()
+        ? logging::logger::output::console
+        : logging::logger::output::file;
 
-    logger::initialize(conf.log_file_path, log_output, conf.log_level);
+    logging::logger::initialize(conf.log_file_path, log_output, conf.log_level);
 
     try {
         stream_manager_ptr proxy_backend;
@@ -130,8 +129,8 @@ int main(int argc, char* argv[])
             srv.run();
         } else {
             std::cout << "Start listening port: " << conf.listen_port << ", tls tunnel mode disabled\n";
-            //server srv(conf.listen_port, std::move(proxy_backend));
-            //srv.run();
+            server srv(conf.listen_port, std::move(proxy_backend));
+            srv.run();
         }
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;

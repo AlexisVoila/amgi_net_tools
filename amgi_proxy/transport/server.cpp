@@ -52,8 +52,15 @@ void server::start_accept()
     acceptor_.async_accept(
         new_stream->socket(),
         [this, new_stream](const net::error_code &ec) {
-            if (!acceptor_.is_open())
+            if (!acceptor_.is_open()) {
+                logging::logger::trace("proxy server acceptor is closed");
+                if (ec) {
+                    std::string serr{"proxy server error: " + ec.message()};
+                    logging::logger::trace(serr);
+                }
+
                 return;
+            }
 
             if (!ec)
                 stream_manager_->on_accept(new_stream);
