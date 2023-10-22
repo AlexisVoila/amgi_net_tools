@@ -28,7 +28,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         "socks5/socks5_stream_manager.h"
         "socks5/socks5_stream_manager.cpp"
 
-        "transport/io_event.h"
+        "transport/io_buffer.h"
         "transport/stream.h"
         "transport/stream_manager.h"
 

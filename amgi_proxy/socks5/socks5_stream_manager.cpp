@@ -66,13 +66,13 @@ void socks5_stream_manager::on_accept(server_stream_ptr upstream)
     states_.insert({id, std::move(session)});
 }
 
-void socks5_stream_manager::on_read(io_event event, server_stream_ptr stream)
+void socks5_stream_manager::on_read(io_buffer event, server_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_read(event);
 }
 
-void socks5_stream_manager::on_write(io_event event, server_stream_ptr stream)
+void socks5_stream_manager::on_write(io_buffer event, server_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_server_write(event);
@@ -84,25 +84,25 @@ void socks5_stream_manager::read_server(int id)
         it->second.server->read();
 }
 
-void socks5_stream_manager::write_server(int id, io_event event)
+void socks5_stream_manager::write_server(int id, io_buffer event)
 {
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.server->write(std::move(event));
 }
 
-void socks5_stream_manager::on_read(io_event event, client_stream_ptr stream)
+void socks5_stream_manager::on_read(io_buffer event, client_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_read(event);
 }
 
-void socks5_stream_manager::on_write(io_event event, client_stream_ptr stream)
+void socks5_stream_manager::on_write(io_buffer event, client_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_write(event);
 }
 
-void socks5_stream_manager::on_connect(io_event event, client_stream_ptr stream)
+void socks5_stream_manager::on_connect(io_buffer event, client_stream_ptr stream)
 {
     if (auto it = states_.find(stream->id()); it != states_.end())
         it->second.handle_client_connect(event);
@@ -114,7 +114,7 @@ void socks5_stream_manager::read_client(int id)
         it->second.client->read();
 }
 
-void socks5_stream_manager::write_client(int id, io_event event)
+void socks5_stream_manager::write_client(int id, io_buffer event)
 {
     if (auto it = sessions_.find(id); it != sessions_.end())
         it->second.client->write(std::move(event));

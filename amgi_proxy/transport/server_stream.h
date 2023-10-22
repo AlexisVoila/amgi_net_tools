@@ -8,7 +8,9 @@
 
 namespace net = asio;
 
-class server_stream : public stream, public std::enable_shared_from_this<server_stream> 
+class server_stream
+    : public stream
+    , public std::enable_shared_from_this<server_stream>
 {
 public:
     server_stream(const stream_manager_ptr& smp, int id) : stream(smp, id) {}

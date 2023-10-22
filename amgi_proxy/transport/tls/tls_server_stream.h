@@ -23,7 +23,7 @@ private:
     void do_start() final;
     void do_stop() final;
     void do_read() final;
-    void do_write(io_event event) final;
+    void do_write(io_buffer event) final;
 
     void handle_error(const net::error_code& ec);
 

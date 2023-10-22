@@ -1,14 +1,14 @@
 #ifndef STREAM_H
 #define STREAM_H
 
-#include "io_event.h"
+#include "io_buffer.h"
 
 #include <memory>
 
 class stream_manager;
 using stream_manager_ptr = std::shared_ptr<stream_manager>;
 
-class stream 
+class stream
 {
 public:
     enum {
@@ -24,7 +24,7 @@ public:
     void start() { do_start(); }
     void stop() { do_stop(); }
     void read() { do_read(); }
-    void write(io_event event) { do_write(std::move(event)); }
+    void write(io_buffer event) { do_write(std::move(event)); }
 
     [[nodiscard]] int id() const { return id_; }
 
@@ -35,7 +35,7 @@ private:
     virtual void do_start() = 0;
     virtual void do_stop() = 0;
     virtual void do_read() = 0;
-    virtual void do_write(io_event event) = 0;
+    virtual void do_write(io_buffer event) = 0;
 
     stream_manager_ptr stream_manager_;
     int id_;

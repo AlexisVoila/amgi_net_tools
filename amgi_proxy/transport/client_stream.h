@@ -5,7 +5,9 @@
 
 #include <string>
 
-class client_stream : public stream, public std::enable_shared_from_this<client_stream> 
+class client_stream
+    : public stream
+    , public std::enable_shared_from_this<client_stream>
 {
 public:
     client_stream(const stream_manager_ptr& smp, int id) : stream(smp, id) {}

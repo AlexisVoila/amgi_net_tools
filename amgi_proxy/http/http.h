@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdint>
 
-class http 
+class http
 {
 public:
 

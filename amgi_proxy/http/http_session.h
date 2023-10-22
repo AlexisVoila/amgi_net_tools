@@ -8,7 +8,7 @@
 class stream_manager;
 using stream_manager_ptr = std::shared_ptr<stream_manager>;
 
-class http_session 
+class http_session
 {
     struct socks_ctx {
         int id;
@@ -22,11 +22,11 @@ class http_session
 public:
     http_session(int id, stream_manager_ptr manager);
     void change_state(std::unique_ptr<http_state> state);
-    void handle_server_read(io_event& event);
-    void handle_client_read(io_event& event);
-    void handle_server_write(io_event& event);
-    void handle_client_write(io_event& event);
-    void handle_client_connect(io_event& event);
+    void handle_server_read(io_buffer& event);
+    void handle_client_read(io_buffer& event);
+    void handle_server_write(io_buffer& event);
+    void handle_client_write(io_buffer& event);
+    void handle_client_connect(io_buffer& event);
     void handle_server_error(net::error_code ec);
     void handle_client_error(net::error_code ec);
 
