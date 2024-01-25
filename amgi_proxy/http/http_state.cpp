@@ -6,159 +6,139 @@
 
 #include <boost/format.hpp>
 
-const std::string g_httpError500 =
-    "HTTP/1.1 500 Internal Server Error\r\n"
-    "Connection : Closed\r\n"
-    "\r\n";
-
-const std::string g_httpDone = 
-    "HTTP/1.1 200 OK\r\n"
-    "\r\n";
-
 using fmt = boost::format;
 using logger = logging::logger;
 
-void http_state::handle_server_read(http_session* session, io_buffer& event) {}
-void http_state::handle_client_read(http_session* session, io_buffer& event) {}
-void http_state::handle_client_connect(http_session* session, io_buffer& event) {}
-void http_state::handle_server_write(http_session* session, io_buffer& event) {}
-void http_state::handle_client_write(http_session* session, io_buffer& event) {}
+namespace 
+{
+    const std::string kHttpError500 =
+        "HTTP/1.1 500 Internal Server Error\r\n"
+        "Connection : Closed\r\n"
+        "\r\n";
+
+    const std::string kHttpDone = 
+        "HTTP/1.1 200 OK\r\n"
+        "\r\n";
+
+    void log_error(http_session* session, net::error_code ec, std::string_view participant)
+    {
+        const auto error = ec.value();
+        const auto msg = ec.message();
+
+        if (ec) {
+            if (!(error == net::error::eof ||
+                  error == net::error::connection_aborted ||
+                  error == net::error::connection_refused ||
+                  error == net::error::connection_reset ||
+                  error == net::error::timed_out ||
+                  error == net::error::operation_aborted ||
+                  error == net::error::bad_descriptor)) {
+                logger::warning((fmt("[%1%] %2% side session error: %3%")
+                                 % session->id()
+                                 % participant
+                                 % msg).str());
+            }
+        }
+    }
+}
+
+void http_state::handle_server_read(http_session* session, io_buffer buffer) {}
+void http_state::handle_client_read(http_session* session, io_buffer buffer) {}
+void http_state::handle_client_connect(http_session* session, io_buffer buffer) {}
+void http_state::handle_server_write(http_session* session, io_buffer buffer) {}
+void http_state::handle_client_write(http_session* session, io_buffer buffer) {}
 
 void http_state::handle_server_error(http_session* session, net::error_code ec) 
 {
-    const auto error = ec.value();
-    const auto msg = ec.message();
-
-    if (ec) {
-        if (!(error == net::error::eof ||
-              error == net::error::connection_aborted ||
-              error == net::error::connection_refused ||
-              error == net::error::connection_reset ||
-              error == net::error::timed_out ||
-              error == net::error::operation_aborted ||
-              error == net::error::bad_descriptor)) {
-            logger::warning((fmt("[%1%] server side session error: %2%") % session->context().id % msg).str());
-        }
-    }
-
-    session->manager()->stop(session->context().id);
+    log_error(session, ec, "server");
+    session->stop();
 }
 
 void http_state::handle_client_error(http_session* session, net::error_code ec)
 {
-    const auto error = ec.value();
-    const auto msg = ec.message();
-
-    if (ec) {
-        if (!(error == net::error::eof ||
-            error == net::error::connection_aborted ||
-            error == net::error::connection_refused ||
-            error == net::error::connection_reset ||
-            error == net::error::timed_out ||
-            error == net::error::operation_aborted ||
-            error == net::error::bad_descriptor)) {
-            logger::warning((fmt("[%1%] client side session error: %2%") % session->context().id % msg).str());
-        }
-    } 
-
-    session->manager()->stop(session->context().id);
+    log_error(session, ec, "client");
+    session->stop();
 }
 
-void http_wait_request::handle_server_read(http_session* session, io_buffer& event)
+void http_wait_request::handle_server_read(http_session* session, io_buffer buffer)
 {
-    auto& ctx = session->context();
+    const auto sid = session->id();
+    const auto* req_str = reinterpret_cast<const char*>(buffer.data());
 
-    const auto* req_str = reinterpret_cast<const char*>(event.data());
-
-    const std::string sv{req_str, event.size()};
-
-    auto http_req = http::get_headers(std::string_view{req_str, event.size()});
-    auto host = http_req.get_host();
-    auto service = http_req.get_service();
+    auto http_req = http::get_headers(std::string_view{req_str, buffer.size()});
+    const auto host = http_req.get_host();
+    const auto service = http_req.get_service();
 
     if (host.empty()) {
-        logger::warning((fmt("[%1%] http protocol: bad request packet") % ctx.id).str());
-        io_buffer new_event{g_httpError500.begin(), g_httpError500.end()};
-        session->manager()->write_server(ctx.id, new_event);
-        session->manager()->stop(ctx.id);
+        logger::warning((fmt("[%1%] http protocol: bad request packet") % sid).str());
+        session->write_to_server(io_buffer{kHttpError500.begin(), kHttpError500.end()});
+        session->stop();
         return;
     }
 
     if (service.empty()) {
-        logger::warning((fmt("[%1%] http protocol: bad remote address format") % ctx.id).str());
-        io_buffer new_event{g_httpError500.begin(), g_httpError500.end()};
-        session->manager()->write_server(ctx.id, new_event);
-        session->manager()->stop(ctx.id);
+        logger::warning((fmt("[%1%] http protocol: bad remote address format") % sid).str());
+        session->write_to_server(io_buffer{kHttpError500.begin(), kHttpError500.end()});
+        session->stop();
         return;
     }
 
-    if (http_req.method == http::kConnect) {
-        ctx.response.resize(g_httpDone.size());
-        std::copy(std::cbegin(g_httpDone), std::cend(g_httpDone), std::begin(ctx.response));
-    } else {
-        ctx.response.resize(event.size());
-        std::copy(std::cbegin(event), std::cend(event), std::begin(ctx.response));
-    }
+    if (http_req.method == http::kConnect)
+        session->set_response(io_buffer{kHttpDone.begin(), kHttpDone.end()});
+    else
+        session->set_response(std::move(buffer));
 
-    ctx.host = host;
-    ctx.service = service;
+    session->set_endpoint_info(host, service);
 
-    logger::info((fmt("[%1%] requested [%2%:%3%]") % ctx.id % host % service).str());
-    session->manager()->connect(ctx.id, std::move(host), std::move(service));
+    logger::info((fmt("[%1%] requested [%2%:%3%]") % sid % host % service).str());
+    session->connect();
     session->change_state(http_connection_established::instance());
 }
 
-void http_connection_established::handle_client_connect(http_session* session, io_buffer& event)
+void http_connection_established::handle_client_connect(http_session* session, io_buffer buffer)
 {
-    auto& ctx = session->context();
-    io_buffer new_event{ctx.response};
-    if (ctx.response.size() == g_httpDone.size()) {
-        session->manager()->write_server(ctx.id, std::move(new_event));
-    } else {
-        session->manager()->write_client(ctx.id, std::move(new_event));
-    }
-    session->change_state(http_ready_to_transfer_data::instance());
+    // TODO
+    const std::string resp{session->get_response().begin(), session->get_response().end()};
+	if (resp == kHttpDone)
+		session->write_to_server(session->get_response());
+	else
+		session->write_to_client(session->get_response());
+	session->change_state(http_ready_to_transfer_data::instance());
 }
 
-void http_ready_to_transfer_data::handle_client_write(http_session* session, io_buffer& event)
+void http_ready_to_transfer_data::handle_client_write(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    session->manager()->read_server(ctx.id);
-    session->manager()->read_client(ctx.id);
+    session->read_from_server();
+    session->read_from_server();
     session->change_state(http_data_transfer_mode::instance());
 }
 
-void http_ready_to_transfer_data::handle_server_write(http_session* session, io_buffer& event)
+void http_ready_to_transfer_data::handle_server_write(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    session->manager()->read_server(ctx.id);
-    session->manager()->read_client(ctx.id);
+    session->read_from_server();
+    session->read_from_client();
     session->change_state(http_data_transfer_mode::instance());
 }
 
 
-void http_data_transfer_mode::handle_server_write(http_session* session, io_buffer& event)
+void http_data_transfer_mode::handle_server_write(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    session->manager()->read_client(ctx.id);
+    session->read_from_client();
 }
 
-void http_data_transfer_mode::handle_server_read(http_session* session, io_buffer& event)
+void http_data_transfer_mode::handle_server_read(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    ctx.transferred_bytes_to_remote += event.size();
-    session->manager()->write_client(ctx.id, std::move(event));
+    session->update_bytes_sent_to_remote(buffer.size());
+    session->write_to_client(std::move(buffer));
 }
 
-void http_data_transfer_mode::handle_client_write(http_session* session, io_buffer& event)
+void http_data_transfer_mode::handle_client_write(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    session->manager()->read_server(ctx.id);
+    session->read_from_server();
 }
 
-void http_data_transfer_mode::handle_client_read(http_session* session, io_buffer& event)
+void http_data_transfer_mode::handle_client_read(http_session* session, io_buffer buffer)
 {
-    auto& ctx{session->context()};
-    ctx.transferred_bytes_to_local += event.size();
-    session->manager()->write_server(ctx.id, std::move(event));
+    session->update_bytes_sent_to_local(buffer.size());
+    session->write_to_server(std::move(buffer));
 }

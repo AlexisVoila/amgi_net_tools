@@ -1,4 +1,5 @@
 #include "socks5_session.h"
+#include "socks5_stream_manager.h"
 
 #include <utility>
 
@@ -63,4 +64,32 @@ stream_manager_ptr socks5_session::manager()
     return manager_;
 }
 
+void socks5_session::connect()
+{
+	manager()->connect(id(), std::string{ host() }, std::string{ service() });
+}
 
+void socks5_session::stop()
+{
+    manager()->stop(id());
+}
+
+void socks5_session::read_from_server()
+{
+    manager()->read_server(id());
+}
+
+void socks5_session::read_from_client()
+{
+    manager()->read_client(id());
+}
+
+void socks5_session::write_to_client(io_buffer buffer)
+{
+    manager()->write_client(id(), std::move(buffer)); 
+}
+
+void socks5_session::write_to_server(io_buffer buffer)
+{
+	manager()->write_server(id(), std::move(buffer));
+}

@@ -42,7 +42,7 @@ tcp::socket& tcp_server_stream::socket() { return socket_; }
 
 void tcp_server_stream::do_start() 
 {
-    const auto str{(fmt("[%1%] incoming connection from socks5-client: [%2%]")
+    const auto str{(fmt("[%1%] incoming connection from client: [%2%]")
                    % id() % ep_to_str(socket_)).str()};
     logger::debug(str);
     do_read();

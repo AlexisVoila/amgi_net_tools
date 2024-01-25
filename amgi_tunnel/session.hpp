@@ -29,7 +29,7 @@ namespace
         const auto& rep = (dir == eRemote) ? sock.remote_endpoint(ec) : sock.local_endpoint(ec);
         if (ec)
         {
-            std::stringstream ss;
+            std::ostringstream ss;
             ss << ((dir == eRemote) ? "remote_endpoint failed: " : "local_endpoint failed: ");
             ss << ec.message();
             return ss.str();

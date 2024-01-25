@@ -1,4 +1,5 @@
 #include "http_session.h"
+#include "http_stream_manager.h"
 
 #include <utility>
 
@@ -48,9 +49,48 @@ void http_session::handle_client_error(net::error_code ec)
     state_->handle_client_error(this, ec);
 }
 
+void http_session::update_bytes_sent_to_remote(std::size_t count)
+{
+	context().transferred_bytes_to_remote += count;
+}
+
+void http_session::update_bytes_sent_to_local(std::size_t count)
+{
+	context().transferred_bytes_to_local += count;
+}
+
 stream_manager_ptr http_session::manager() 
 {
     return manager_;
 }
 
+void http_session::connect()
+{
+	manager()->connect(id(), std::string{ host() }, std::string{ service() });
+}
+
+void http_session::stop()
+{
+	manager()->stop(id());
+}
+
+void http_session::read_from_server()
+{
+	manager()->read_server(id());
+}
+
+void http_session::read_from_client()
+{
+	manager()->read_client(id());
+}
+
+void http_session::write_to_client(io_buffer buffer)
+{
+	manager()->write_client(id(), std::move(buffer));
+}
+
+void http_session::write_to_server(io_buffer buffer)
+{
+	manager()->write_server(id(), std::move(buffer));
+}
 
