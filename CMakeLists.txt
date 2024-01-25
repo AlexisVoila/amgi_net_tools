@@ -18,16 +18,8 @@ if(WIN32)
     set(Boost_USE_MULTITHREADED     ON)
     set(Boost_USE_STATIC_RUNTIME    ON)
 
-    set(BOOST_ROOT                  "c:/dev/lib/boost/boost_1_79_0")
-    set(Boost_INCLUDE_DIR           "c:/dev/lib/boost/boost_1_79_0")
-    set(Boost_LIBRARIES             "c:/dev/lib/boost/boost_1_79_0/lib64-msvc-14.3")
-
-
     set(OPENSSL_USE_STATIC_LIBS     TRUE)
     set(OPENSSL_MSVC_STATIC_RT      TRUE)
-    set(OPENSSL_ROOT_DIR            "c:/dev/lib/OpenSSL-Win64/")
-    set(OPENSSL_INCLUDE_DIR         "c:/dev/lib/OpenSSL-Win64/include")
-    set(OPENSSL_LIBRARIES           "c:/dev/lib/OpenSSL-Win64/lib")
 endif()
 
 find_package(Boost COMPONENTS system program_options REQUIRED)

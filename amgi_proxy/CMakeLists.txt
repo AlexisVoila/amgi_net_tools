@@ -106,8 +106,3 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${OPENSSL_INCLUDE_DIR}
     PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
-
-
-
-
-
