@@ -11,7 +11,7 @@ server::server(const std::string &port, stream_manager_ptr proxy_backend)
     configure_signals();
     async_wait_signals();
 
-    uint16_t listen_port{0};
+    std::uint16_t listen_port{0};
     std::from_chars(port.data(), port.data() + port.size(), listen_port);
 
     tcp::endpoint ep{tcp::endpoint(tcp::v4(), listen_port)};
@@ -20,7 +20,7 @@ server::server(const std::string &port, stream_manager_ptr proxy_backend)
     acceptor_.bind(ep);
     acceptor_.listen();
 
-    logging::logger::info("socks5-proxy server starts on port: " + port);
+    logging::logger::info("proxy server starts on port: " + port);
     start_accept();
 }
 
@@ -39,10 +39,10 @@ void server::async_wait_signals()
 {
     signals_.async_wait(
         [this](net::error_code /*ec*/, int /*signno*/) {
-            logging::logger::info("socks5-proxy server stopping");
+            logging::logger::info("proxy server stopping");
             acceptor_.close();
             ctx_.stop();
-            logging::logger::info("socks5-proxy server stopped");
+            logging::logger::info("proxy server stopped");
         });
 }
 

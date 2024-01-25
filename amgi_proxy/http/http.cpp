@@ -90,47 +90,50 @@ namespace
     }
 }
 
-std::string http::request_headers::get_service() const 
+namespace http
 {
-    if (method != request_method::kConnect) {
-        const auto parts = split(uri, ":");
+    std::string request_headers::get_service() const
+    {
+        if (method != request_method::kConnect) {
+            const auto parts = split(uri, ":");
+            if (parts.size() == 2)
+                return std::string{parts[0]};
+            return {};
+        }
+
+        const auto parts = split(host, ":");
         if (parts.size() == 2)
-            return std::string{parts[0]};
+            return std::string{parts[1]};
+
         return {};
     }
 
-    const auto parts = split(host, ":");
-    if (parts.size() == 2)
-        return std::string{parts[1]};
+    std::string request_headers::get_host() const
+    {
+        if (method != request_method::kConnect)
+            return std::string{host};
 
-    return {};
-}
+        const auto parts = split(host, ":");
+        if (parts.size() == 2)
+            return std::string{parts[0]};
 
-std::string http::request_headers::get_host() const
-{
-    if (method != request_method::kConnect)
-        return std::string{host};
-
-    const auto parts = split(host, ":");
-    if (parts.size() == 2)
-        return std::string{parts[0]};
-
-    return {};
-}
-
-http::request_headers http::get_headers(std::string_view header)
-{
-    const auto http_req_hdrs = split(header, "\r\n");
-    if (http_req_hdrs.size() < 2)
         return {};
+    }
 
-    request_headers req;
+    request_headers get_headers(std::string_view header)
+    {
+        const auto http_req_hdrs = split(header, "\r\n");
+        if (http_req_hdrs.size() < 2)
+            return {};
 
-    if (!get_request_fields(http_req_hdrs[0], req))
-        return {};
+        request_headers req;
 
-    if (!get_remaining_required_fields(http_req_hdrs, 1, req))
-        return {};
+        if (!get_request_fields(http_req_hdrs[0], req))
+            return {};
 
-    return req;
+        if (!get_remaining_required_fields(http_req_hdrs, 1, req))
+            return {};
+
+        return req;
+    }
 }

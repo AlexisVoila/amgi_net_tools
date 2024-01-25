@@ -8,7 +8,7 @@
 namespace net = asio;
 using tcp = asio::ip::tcp;
 
-class tcp_server_stream final : public server_stream 
+class tcp_server_stream final : public server_stream
 {
 public:
     tcp_server_stream(const stream_manager_ptr& ptr, int id, net::io_context& ctx);
@@ -20,7 +20,7 @@ private:
     void do_start() final;
     void do_stop() final;
     void do_read() final;
-    void do_write(io_event event) final;
+    void do_write(io_buffer event) final;
 
     void handle_error(const net::error_code& ec);
 

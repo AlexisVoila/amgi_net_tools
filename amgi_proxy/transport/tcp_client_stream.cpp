@@ -33,7 +33,7 @@ namespace
 tcp_client_stream::tcp_client_stream(const stream_manager_ptr& ptr, int id, net::io_context& ctx)
     : client_stream{ptr, id}
     , socket_{ctx}
-    , resolver_{ctx}, read_buffer_{}, write_buffer_{} 
+    , resolver_{ctx}, read_buffer_{}, write_buffer_{}
 {}
 
 tcp_client_stream::~tcp_client_stream() 
@@ -69,7 +69,7 @@ void tcp_client_stream::do_connect(tcp::resolver::results_type&& results)
             if (!ec) {
                 logger::info((fmt("[%1%] connected to [%2%] --> [%3%]") % id() % host_ % ep_to_str(socket_, eRemote)));
                 logger::debug((fmt("[%1%] local address [%2%]") % id() % ep_to_str(socket_, eLocal)));
-                io_event event{};
+                io_buffer event{};
                 manager()->on_connect(std::move(event), shared_from_this());
             } else {
                 handle_error(ec);
@@ -77,14 +77,14 @@ void tcp_client_stream::do_connect(tcp::resolver::results_type&& results)
         });
 }
 
-void tcp_client_stream::do_write(io_event event) 
+void tcp_client_stream::do_write(io_buffer event) 
 {
-    copy(event.begin(), event.end(), write_buffer_.begin());
+    std::copy(event.begin(), event.end(), write_buffer_.begin());
     net::async_write(
         socket_, net::buffer(write_buffer_, event.size()),
         [this, self{shared_from_this()}] (const net::error_code& ec, std::size_t) {
             if (!ec) {
-                manager()->on_write(std::move(io_event{}), shared_from_this());
+                manager()->on_write(std::move(io_buffer{}), shared_from_this());
             } else {
                 handle_error(ec);
             }
@@ -97,7 +97,7 @@ void tcp_client_stream::do_read()
         net::buffer(read_buffer_),
         [this, self{shared_from_this()}] (const net::error_code& ec, const std::size_t length) {
             if (!ec && length) {
-                io_event event{read_buffer_.data(), read_buffer_.data() + length};
+                io_buffer event{read_buffer_.data(), read_buffer_.data() + length};
                 manager()->on_read(std::move(event), shared_from_this());
             } else {
                 handle_error(ec);

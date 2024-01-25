@@ -7,9 +7,14 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "installDir": "${sourceDir}/out/install/${presetName}",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "OPENSSL_ROOT_DIR": "c:/bin/vcpkg/vcpkg/installed/x64-windows-static/"
       },
       "condition": {
         "type": "equals",
@@ -21,10 +26,6 @@
       "name": "x64-debug",
       "displayName": "x64 Debug",
       "inherits": "windows-base",
-      "architecture": {
-        "value": "x64",
-        "strategy": "external"
-      },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_VS_JUST_MY_CODE_DEBUGGING": "On"
@@ -33,7 +34,7 @@
     {
       "name": "x64-release",
       "displayName": "x64 Release",
-      "inherits": "x64-debug",
+      "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_VS_JUST_MY_CODE_DEBUGGING": "Off"

@@ -4,10 +4,8 @@
 #include <iostream>
 #include <cstdint>
 
-class http 
+namespace http
 {
-public:
-
     enum request_method : int
     {
         kNone,
@@ -22,6 +20,7 @@ public:
     struct request_headers
     {
         request_method method;
+
         std::string_view uri;
         std::string_view version;
         std::string_view host;
@@ -31,7 +30,7 @@ public:
         std::string get_service() const;
     };
 
-    static request_headers get_headers(std::string_view header);
+    request_headers get_headers(std::string_view header);
 };
 
 

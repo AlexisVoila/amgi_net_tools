@@ -19,20 +19,20 @@ public:
     void stop(stream_ptr stream) override;
     void stop(int id) override;
     void on_close(stream_ptr stream) override;
-    void on_error(net::error_code ec, server_stream_ptr stream) override;
-    void on_error(net::error_code ec, client_stream_ptr stream) override;
 
     void on_accept(server_stream_ptr stream) override;
-    void on_read(io_event event, server_stream_ptr stream) override;
-    void on_write(io_event event, server_stream_ptr stream) override;
+    void on_read(io_buffer event, server_stream_ptr stream) override;
+    void on_write(io_buffer event, server_stream_ptr stream) override;
+    void on_error(net::error_code ec, server_stream_ptr stream) override;
     void read_server(int id) override;
-    void write_server(int id, io_event event) override;
+    void write_server(int id, io_buffer event) override;
 
-    void on_connect(io_event event, client_stream_ptr stream) override;
-    void on_read(io_event event, client_stream_ptr stream) override;
-    void on_write(io_event event, client_stream_ptr stream) override;
+    void on_connect(io_buffer event, client_stream_ptr stream) override;
+    void on_read(io_buffer event, client_stream_ptr stream) override;
+    void on_write(io_buffer event, client_stream_ptr stream) override;
+    void on_error(net::error_code ec, client_stream_ptr stream) override;
     void read_client(int id) override;
-    void write_client(int id, io_event event) override;
+    void write_client(int id, io_buffer event) override;
     void connect(int id, std::string host, std::string service) override;
 
 private:
@@ -40,10 +40,10 @@ private:
         int id;
         server_stream_ptr server;
         client_stream_ptr client;
+        http_session session;
     };
 
     std::unordered_map<int, http_pair> sessions_;
-    std::unordered_map<int, http_session> states_;
 };
 
 using http_stream_manager_ptr = std::shared_ptr<http_stream_manager>;

@@ -48,7 +48,7 @@ tcp::socket& tls_server_stream::socket()
 
 void tls_server_stream::do_start() 
 {
-    const auto str{(fmt("[%1%] incoming connection from socks5-client: [%2%]")
+    const auto str{(fmt("[%1%] incoming connection from client: [%2%]")
                    % id() % ep_to_str(socket_)).str()};
     logger::debug(str);
     do_handshake();
@@ -91,14 +91,14 @@ void tls_server_stream::do_handshake()
     });
 }
 
-void tls_server_stream::do_write(io_event event) 
+void tls_server_stream::do_write(io_buffer event) 
 {
     copy(event.begin(), event.end(), write_buffer_.begin());
     net::async_write(
             socket_, net::buffer(write_buffer_, event.size()),
             [this, self{shared_from_this()}](const net::error_code &ec, size_t) {
                 if (!ec) {
-                    manager()->on_write(std::move(io_event{}), shared_from_this());
+                    manager()->on_write(std::move(io_buffer{}), shared_from_this());
                 } else {
                     handle_error(ec);
                 }
@@ -111,7 +111,7 @@ void tls_server_stream::do_read()
             net::buffer(read_buffer_),
             [this, self{shared_from_this()}](const net::error_code &ec, const size_t length) {
                 if (!ec) {
-                    io_event event(read_buffer_.data(), read_buffer_.data() + length);
+                    io_buffer event(read_buffer_.data(), read_buffer_.data() + length);
                     manager()->on_read(std::move(event), shared_from_this());
                 } else {
                     handle_error(ec);

@@ -67,6 +67,3 @@ endif()
  if (UNIX)
     target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
 endif()
-
-
-

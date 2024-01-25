@@ -55,8 +55,7 @@ int main(int argc, char* argv[])
     try {
         server srv(conf.listen_port, conf.target_host, conf.target_port, conf.tls_options);
         srv.run();
-    }
-    catch (const std::exception& ex) {
+    } catch (const std::exception& ex) {
         std::cerr << ex.what() << std::endl;
     }
 
